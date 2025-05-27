@@ -32,21 +32,14 @@ func (t *tracedProcessor) ProcessBatch(ctx context.Context, m message.Batch) ([]
 		return t.wrapped.ProcessBatch(ctx, m)
 	}
 
-	// Track input parts and their flow IDs for better correlation
-	inputParts := make([]*message.Part, m.Len())
 	prevErrs := make([]error, m.Len())
 	_ = m.Iter(func(i int, part *message.Part) error {
-		inputParts[i] = part
 		t.e.Add(EventConsumeOf(part))
 		prevErrs[i] = part.ErrorGet()
 		return nil
 	})
 
 	outMsgs, res := t.wrapped.ProcessBatch(ctx, m)
-
-	// Track which input parts produced outputs
-	hasOutput := make([]bool, len(inputParts))
-
 	for _, outMsg := range outMsgs {
 		_ = outMsg.Iter(func(i int, part *message.Part) error {
 			t.e.Add(EventProduceOf(part))
@@ -59,25 +52,13 @@ func (t *tracedProcessor) ProcessBatch(ctx context.Context, m message.Batch) ([]
 				return nil
 			}
 			_ = atomic.AddUint64(t.errCtr, 1)
-			t.e.Add(EventErrorOfPart(part, fail))
+			t.e.Add(EventErrorOf(fail))
 			return nil
 		})
-
-		// Mark that we have output for tracking deletions
-		if outMsg.Len() > 0 {
-			for i := 0; i < len(hasOutput) && i < outMsg.Len(); i++ {
-				hasOutput[i] = true
-			}
-		}
 	}
-
-	// If no output messages, record delete events for each input part
 	if len(outMsgs) == 0 {
-		for _, part := range inputParts {
-			if part != nil {
-				t.e.Add(EventDeleteOfPart(part))
-			}
-		}
+		// TODO: Find a better way of locating deletes (using batch index tracking).
+		t.e.Add(EventDeleteOf())
 	}
 
 	return outMsgs, res
