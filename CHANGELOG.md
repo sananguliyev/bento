@@ -3,6 +3,111 @@ Changelog
 
 All notable changes to this project will be documented in this file.
 
+## 1.11.0 - 2025-09-19
+
+### Added
+
+- new bloblang method `split_by`, similar to `split` but takes a predicate rather than a value for the delimiter @iamramtin
+- `nlp_classify_text`, `nlp_classify_tokens`, `nlp_extract_features` & `nlp_zero_shot_classify` processors enable use of ONNX NLP models @gregfurman
+- `elasticsearch_v2` output component, uses official elasticsearch go client @jem-davies
+- `gcp_spanner_cdc` consumes Spanner Change Stream Events from a GCP Spanner instance @anicoll & @gregfurman
+
+### Changed
+
+- deprecated `elasticsearch` output @jem-davies
+- deprecated `parquet` processor removed @jem-davies
+- `golangci-lint` upgraded to V2 @miparnisari
+- bloblang method `split` can now operate on arrays as well as strings @iamramtin
+
+### Fixed
+
+- fix input `azure_blob_storage` failing to delete blobs when using `targets_input` & `delete_object: true` @adrianhag
+- fix `inject_tracing_map` config examples @eastnine90
+- fix data-race in config/schema.go @miparnisari
+- fix data-race in sql dsn building @gregfurman
+- fix validation for the seed_brokers config field in `kafka_franz` @gregfurman
+- fix oracle integration tests @jem-davies
+
+## 1.10.2 - 2025-09-15
+
+### Fixed 
+
+- `sql_insert` & `sql_raw` output components check connection, and will attempt reconnection via Components' Connect() func @jem-davies
+
+## 1.10.1 - 2025-09-10
+
+### Fixed 
+
+ - fix data-race in sql dsn building @gregfurman
+ - fix issue connecting to RDS via IAM Auth @gregfurman
+
+## 1.10.0 - 2025-08-14
+
+### Added
+
+- `SharedMetricsSetup` added to service package enabling multiple streams created with StreamBuilder to share the same metric registry @ecordell
+- `azure` fields added to SQL components enabling using Azure based auth for Azure Postgres SQL @jem-davies
+- `aws_dynamodb` output also supports deleting items from a dynamodb table @rohankumardubey & @jem-davies
+- WASM bloblang playground to doc site @iamramtin
+- reconnect config options to `zmq4n` output @gregfurman
+- `MockResourcesOptUseSlogger` function to enable setting a logger on MockResources @jem-davies
+
+### Changed
+
+- Bento will emit warning logs if a config is using a deprecated component/field @jem-davies
+- CSV scanner & input will now error if a config sets `parse_header_row` is false & `expected_headers` is non-empty @rohankumardubey
+
+## 1.9.1 - 2025-07-29
+
+### Fixed 
+
+- multipart s3 uploads for `aws_s3` output destination @Towerthousand
+
+## 1.9.0 - 2025-07-07
+
+- update `parquet-go` dependency from `0.23.0` to `0.24.0` @gregfurman
+
+### Added 
+
+- `create` added to `opensearch`'s `action` field to support write to data streams @arnitolog
+- `message_format` to `gcp_bigquery_write_api` enabling protobuf messages to be sent without need for marshalling to json @gregfurman
+- `use_parquet_list_format` flag to `parquet_decode` allowing a `LIST` column to return as either a Parquet logical type or Go slice @gregfurman
+
+### Changed 
+
+- Full rework of local bloblang editor/playground to be shinier, prettier, and more interactive @iamramtin
+- metadata `gcp_pubsub_message_id` & `gcp_pubsub_ordering_key` added to `gcp_pubsub` input @anicoll
+
+## 1.8.2 - 2025-06-25
+
+### Fixed 
+
+- `aws_cloudwatch` metrics not flushed before Bento shutdown @jem-davies
+
+## 1.8.1 - 2025-06-17
+
+### Added 
+
+- `AWS_MSK_IAM` option to `kafka` components `sasl.mechanism` @gitphill
+
+## 1.8.0 - 2025-06-08
+
+### Added 
+
+- `iam_enabled` field to sql components enables connection to aws rds instances via iam authentication @gregfurman & @jem-davies
+- `nats_object_store` components enable connecting to a nats object store @jem-davies
+- `reconnect_on_unknown_topic` field enables the `kafka_franz` input to handle recreated topics @brianshih1
+- `expected_headers` & `expected_number_of_fields` added to `csv` input providing more validation options @etolbakov
+
+### Fixed 
+
+- `elasticsearch` output `tls` connections @jem-davies
+
+### Changed 
+
+- `open_message` field in `websocket` input deprecated for `open_messages` enabling sending multiple messages to the server upon connection @jr200
+- `ResourceFromYAML` test helpers to use constant during string formatting, in preparation for Go 1.24 update @gregfurman
+
 ## 1.7.1 - 2025-05-13 
 
 - enabled `error_handling.strategy` fields when using streamBuilder.Build() @MaudGautier
@@ -20,7 +125,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed 
 
 - ignoring context cancellation / timeout during graceful shutdown of streams for error logging purposes @jub0bs 
-- public implementations of `MessageAwareRateLimit` now correctly register @maudgautier
+- public implementations of `MessageAwareRateLimit` now correctly register @MaudGautier
 
 ## 1.6.1 - 2025-05-06
 

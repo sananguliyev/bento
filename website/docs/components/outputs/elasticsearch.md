@@ -2,7 +2,7 @@
 title: elasticsearch
 slug: elasticsearch
 type: output
-status: stable
+status: deprecated
 categories: ["Services"]
 ---
 
@@ -15,6 +15,10 @@ categories: ["Services"]
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
+:::warning DEPRECATED
+This component is deprecated and will be removed in the next major version release. Please consider moving onto [alternative components](#alternatives).
+:::
+	
 Publishes messages into an Elasticsearch index. If the index does not exist then it is created with a dynamic mapping.
 
 
@@ -102,6 +106,10 @@ output:
 
 </TabItem>
 </Tabs>
+
+## Alternatives
+
+For elasticsearch use the new [`elasticsearch_v2`](/docs/components/outputs/elasticsearch_v2) output. To connect to AWS Opensearch use [`opensearch`](/docs/components/outputs/opensearch)
 
 Both the `id` and `index` fields can be dynamically set using function interpolations described [here](/docs/configuration/interpolation#bloblang-queries). When sending batched messages these interpolations are performed per message part.
 

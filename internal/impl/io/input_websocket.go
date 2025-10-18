@@ -35,7 +35,7 @@ func websocketInputSpec() *service.ConfigSpec {
 		Stable().
 		Categories("Network").
 		Summary("Connects to a websocket server and continuously receives messages.").
-		Description(`It is possible to configure an `+"`open_message`"+`, which when set to a non-empty string will be sent to the websocket server each time a connection is first established.`).
+		Description(`It is possible to configure a list of `+"`open_messages`"+`, which when set will be sent to the websocket server each time a connection is first established.`).
 		Fields(
 			service.NewURLField("url").
 				Description("The URL to connect to.").
@@ -43,8 +43,20 @@ func websocketInputSpec() *service.ConfigSpec {
 			service.NewURLField("proxy_url").
 				Description("An optional HTTP proxy URL.").
 				Advanced().Optional(),
+			service.NewInterpolatedStringMapField("headers").
+				Description("A map of custom headers to add to the websocket handshake.").
+				Example(map[string]any{
+					"Sec-WebSocket-Protocol": "graphql-ws",
+					"User-Agent":             `${! uuid_v4() }`,
+					"X-Client-ID":            `${CLIENT_ID}`,
+				}).
+				Advanced().Optional().
+				Default(map[string]any{}),
 			service.NewStringField("open_message").
 				Description("An optional message to send to the server upon connection.").
+				Advanced().Optional().Deprecated(),
+			service.NewStringListField("open_messages").
+				Description("An optional list of messages to send to the server upon connection. This field replaces `open_message`, which will be removed in a future version.").
 				Advanced().Optional(),
 			service.NewStringAnnotatedEnumField("open_message_type", map[string]string{
 				string(wsOpenMsgTypeBinary): "Binary data open_message.",
@@ -54,6 +66,7 @@ func websocketInputSpec() *service.ConfigSpec {
 			service.NewAutoRetryNacksToggleField(),
 			service.NewTLSToggledField("tls"),
 		).
+		LintRule(`root = match {this.exists("open_message") && this.open_messages != [] => "both open_message and open_messages cannot be set"}`).
 		Fields(config.AsyncOptsFields()...).
 		Fields(service.NewHTTPRequestAuthSignerFields()...)
 }
@@ -104,7 +117,8 @@ type websocketReader struct {
 	reqSigner      func(f fs.FS, req *http.Request) error
 
 	openMsgType wsOpenMsgType
-	openMsg     []byte
+	openMsg     [][]byte
+	headers     map[string]*service.InterpolatedString
 }
 
 func newWebsocketReaderFromParsed(conf *service.ParsedConfig, mgr bundle.NewManagement) (*websocketReader, error) {
@@ -131,13 +145,23 @@ func newWebsocketReaderFromParsed(conf *service.ParsedConfig, mgr bundle.NewMana
 	if ws.reqSigner, err = conf.HTTPRequestAuthSignerFromParsed(); err != nil {
 		return nil, err
 	}
+	if ws.headers, err = conf.FieldInterpolatedStringMap("headers"); err != nil {
+		return nil, err
+	}
 	var openMsgStr, openMsgTypeStr string
+	var openMsgsStr []string
 	if openMsgTypeStr, err = conf.FieldString("open_message_type"); err != nil {
 		return nil, err
 	}
 	ws.openMsgType = wsOpenMsgType(openMsgTypeStr)
-	if openMsgStr, _ = conf.FieldString("open_message"); openMsgStr != "" {
-		ws.openMsg = []byte(openMsgStr)
+	if openMsgsStr, _ = conf.FieldStringList("open_messages"); len(openMsgsStr) > 0 {
+		ws.openMsg = make([][]byte, len(openMsgsStr))
+		for i, msg := range openMsgsStr {
+			ws.openMsg[i] = []byte(msg)
+		}
+	} else if openMsgStr, _ = conf.FieldString("open_message"); openMsgStr != "" {
+		ws.openMsg = make([][]byte, 1)
+		ws.openMsg[0] = []byte(openMsgStr)
 	}
 	return ws, nil
 }
@@ -158,6 +182,13 @@ func (w *websocketReader) Connect(ctx context.Context) error {
 	}
 
 	headers := http.Header{}
+	for k, v := range w.headers {
+		value, err := v.TryString(service.NewMessage(nil))
+		if err != nil {
+			return fmt.Errorf(`failed string interpolation on header %q: %w`, k, err)
+		}
+		headers.Add(k, value)
+	}
 
 	err := w.reqSigner(w.mgr.FS(), &http.Request{
 		URL:    w.urlParsed,
@@ -202,8 +233,8 @@ func (w *websocketReader) Connect(ctx context.Context) error {
 		return fmt.Errorf("unrecognised open_message_type: %s", w.openMsgType)
 	}
 
-	if len(w.openMsg) > 0 {
-		if err := client.WriteMessage(openMsgType, w.openMsg); err != nil {
+	for _, msg := range w.openMsg {
+		if err := client.WriteMessage(openMsgType, msg); err != nil {
 			return err
 		}
 	}

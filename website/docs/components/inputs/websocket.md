@@ -44,7 +44,8 @@ input:
   websocket:
     url: ws://localhost:4195/get/ws # No default (required)
     proxy_url: "" # No default (optional)
-    open_message: "" # No default (optional)
+    headers: {}
+    open_messages: [] # No default (optional)
     open_message_type: binary
     auto_replay_nacks: true
     tls:
@@ -77,7 +78,7 @@ input:
 </TabItem>
 </Tabs>
 
-It is possible to configure an `open_message`, which when set to a non-empty string will be sent to the websocket server each time a connection is first established.
+It is possible to configure a list of `open_messages`, which when set will be sent to the websocket server each time a connection is first established.
 
 ## Fields
 
@@ -101,12 +102,30 @@ An optional HTTP proxy URL.
 
 Type: `string`  
 
-### `open_message`
+### `headers`
 
-An optional message to send to the server upon connection.
+A map of custom headers to add to the websocket handshake.
+This field supports [interpolation functions](/docs/configuration/interpolation#bloblang-queries).
 
 
-Type: `string`  
+Type: `object`  
+Default: `{}`  
+
+```yml
+# Examples
+
+headers:
+  Sec-WebSocket-Protocol: graphql-ws
+  User-Agent: ${! uuid_v4() }
+  X-Client-ID: ${CLIENT_ID}
+```
+
+### `open_messages`
+
+An optional list of messages to send to the server upon connection. This field replaces `open_message`, which will be removed in a future version.
+
+
+Type: `array`  
 
 ### `open_message_type`
 

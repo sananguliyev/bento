@@ -64,9 +64,9 @@ func TestCSVReaderHappy(t *testing.T) {
 		resMsg, _, err = f.ReadBatch(context.Background())
 		require.NoError(t, err)
 
-		msgBytes, err := resMsg[0].AsBytes()
+		mBytes, err := resMsg[0].AsBytes()
 		require.NoError(t, err)
-		assert.Equal(t, exp, string(msgBytes))
+		assert.Equal(t, exp, string(mBytes))
 
 		m, _ := resMsg[0].MetaGet("path")
 		assert.Equal(t, dummyFile, m)
@@ -141,7 +141,7 @@ func TestCSVReaderGroupCount(t *testing.T) {
 		resMsg, _, err = f.ReadBatch(context.Background())
 		require.NoError(t, err)
 
-		require.Equal(t, len(exp), len(resMsg))
+		require.Len(t, resMsg, len(exp))
 		for i := 0; i < len(exp); i++ {
 			mBytes, err := resMsg[i].AsBytes()
 			require.NoError(t, err)
@@ -495,4 +495,215 @@ func TestCSVReaderLazyQuotes(t *testing.T) {
 
 		assert.Equal(t, test.expected, string(mBytes), test.name)
 	}
+}
+
+func TestCSVScannerExpectedHeaders(t *testing.T) {
+	var handle bytes.Buffer
+
+	for _, msg := range []string{
+		"foo,bar,baz",
+		"foo1,bar1,baz1",
+		"foo2,bar2,baz2",
+	} {
+		handle.WriteString(msg)
+		handle.WriteString("\n")
+	}
+	ctored := false
+	f, err := newCSVReader(
+		func(ctx context.Context) (csvScannerInfo, error) {
+			if ctored {
+				return csvScannerInfo{}, io.EOF
+			}
+			ctored = true
+			return csvScannerInfo{handle: &handle}, nil
+		},
+		func(ctx context.Context) {},
+		optCSVSetExpectedHeaders([]string{"foo", "bar", "baz"}),
+	)
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		ctx, done := context.WithTimeout(context.Background(), time.Second*30)
+		require.NoError(t, f.Close(ctx))
+		done()
+	})
+
+	require.NoError(t, f.Connect(context.Background()))
+
+	for _, exp := range []string{
+		`{"bar":"bar1","baz":"baz1","foo":"foo1"}`,
+		`{"bar":"bar2","baz":"baz2","foo":"foo2"}`,
+	} {
+		var resMsg service.MessageBatch
+		resMsg, _, err = f.ReadBatch(context.Background())
+
+		require.NoError(t, err)
+
+		mBytes, err := resMsg[0].AsBytes()
+		require.NoError(t, err)
+		assert.Equal(t, exp, string(mBytes))
+	}
+
+	_, _, err = f.ReadBatch(context.Background())
+	assert.Equal(t, service.ErrNotConnected, err)
+
+	err = f.Connect(context.Background())
+	assert.Equal(t, service.ErrEndOfInput, err)
+}
+
+func TestCSVScannerExpectedHeadersErr(t *testing.T) {
+	var handle bytes.Buffer
+
+	for _, msg := range []string{
+		"foo,bar,baz",
+		"foo1,bar1,baz1",
+		"foo2,bar2,baz2",
+	} {
+		handle.WriteString(msg)
+		handle.WriteString("\n")
+	}
+	ctored := false
+	f, err := newCSVReader(
+		func(ctx context.Context) (csvScannerInfo, error) {
+			if ctored {
+				return csvScannerInfo{}, io.EOF
+			}
+			ctored = true
+			return csvScannerInfo{handle: &handle}, nil
+		},
+		func(ctx context.Context) {},
+		optCSVSetExpectedHeaders([]string{"foo", "bar", "baz", "qux"}),
+	)
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		ctx, done := context.WithTimeout(context.Background(), time.Second*30)
+		require.NoError(t, f.Close(ctx))
+		done()
+	})
+
+	require.NoError(t, f.Connect(context.Background()))
+
+	_, _, err = f.ReadBatch(context.Background())
+	require.ErrorContains(t, err, "expected_headers don't match file contents")
+}
+
+func TestCSVScannerExpectedNumberOfFields(t *testing.T) {
+	var handle bytes.Buffer
+
+	for _, msg := range []string{
+		"foo,bar,baz",
+		"foo1,bar1,baz1",
+		"foo2,bar2,baz2",
+	} {
+		handle.WriteString(msg)
+		handle.WriteString("\n")
+	}
+	ctored := false
+	f, err := newCSVReader(
+		func(ctx context.Context) (csvScannerInfo, error) {
+			if ctored {
+				return csvScannerInfo{}, io.EOF
+			}
+			ctored = true
+			return csvScannerInfo{handle: &handle}, nil
+		},
+		func(ctx context.Context) {},
+		optCSVSetExpectedNumberOfFields(3),
+	)
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		ctx, done := context.WithTimeout(context.Background(), time.Second*30)
+		require.NoError(t, f.Close(ctx))
+		done()
+	})
+
+	require.NoError(t, f.Connect(context.Background()))
+
+	for _, exp := range []string{
+		`{"bar":"bar1","baz":"baz1","foo":"foo1"}`,
+		`{"bar":"bar2","baz":"baz2","foo":"foo2"}`,
+	} {
+		var resMsg service.MessageBatch
+		resMsg, _, err = f.ReadBatch(context.Background())
+
+		require.NoError(t, err)
+
+		mBytes, err := resMsg[0].AsBytes()
+		require.NoError(t, err)
+		assert.Equal(t, exp, string(mBytes))
+	}
+
+	_, _, err = f.ReadBatch(context.Background())
+	assert.Equal(t, service.ErrNotConnected, err)
+
+	err = f.Connect(context.Background())
+	assert.Equal(t, service.ErrEndOfInput, err)
+}
+
+func TestCSVScannerExpectedNumberOfErr(t *testing.T) {
+	var handle bytes.Buffer
+
+	for _, msg := range []string{
+		"foo,bar,baz",
+		"foo1,bar1,baz1",
+		"foo2,bar2,baz2",
+	} {
+		handle.WriteString(msg)
+		handle.WriteString("\n")
+	}
+	ctored := false
+	f, err := newCSVReader(
+		func(ctx context.Context) (csvScannerInfo, error) {
+			if ctored {
+				return csvScannerInfo{}, io.EOF
+			}
+			ctored = true
+			return csvScannerInfo{handle: &handle}, nil
+		},
+		func(ctx context.Context) {},
+		optCSVSetExpectedNumberOfFields(4),
+	)
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		ctx, done := context.WithTimeout(context.Background(), time.Second*30)
+		require.NoError(t, f.Close(ctx))
+		done()
+	})
+
+	require.NoError(t, f.Connect(context.Background()))
+	_, _, err = f.ReadBatch(context.Background())
+	require.ErrorContains(t, err, "wrong number of fields")
+}
+
+func TestCSVScannerExpectedHeadersLintRuleErr(t *testing.T) {
+	builder := service.NewStreamBuilder()
+
+	err := builder.SetYAML(`
+input:
+    csv:
+      paths: ["./data.csv"]
+      parse_header_row: false
+      expected_headers: ["one", "two", "three"]
+output:
+  stdout: {}
+`)
+	require.ErrorContains(t, err, "expected_headers is set but parse_header_row is false")
+}
+
+func TestCSVScannerExpectedHeadersLintRuleHappy(t *testing.T) {
+	builder := service.NewStreamBuilder()
+
+	err := builder.SetYAML(`
+input:
+    csv:
+      paths: ["./data.csv"]
+      parse_header_row: true
+      expected_headers: ["one", "two", "three"]
+output:
+  stdout: {}
+`)
+	require.NoError(t, err)
 }
