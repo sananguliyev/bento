@@ -10,16 +10,17 @@ require (
 	cloud.google.com/go/storage v1.45.0
 	connectrpc.com/connect v1.18.1
 	cuelang.org/go v0.7.1
-	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.11.1
-	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.6.0
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.18.2
+	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.11.0
 	github.com/Azure/azure-sdk-for-go/sdk/data/azcosmos v0.3.6
 	github.com/Azure/azure-sdk-for-go/sdk/data/aztables v1.1.0
+	github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus v1.10.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.2.1
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azqueue v1.0.0
-	github.com/Azure/go-amqp v1.0.5
+	github.com/Azure/go-amqp v1.4.0
 	github.com/ClickHouse/clickhouse-go/v2 v2.21.1
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.21.0
-	github.com/IBM/sarama v1.45.2
+	github.com/IBM/sarama v1.46.3
 	github.com/Jeffail/checkpoint v1.0.1
 	github.com/Jeffail/gabs/v2 v2.7.0
 	github.com/Jeffail/grok v1.1.0
@@ -58,7 +59,7 @@ require (
 	github.com/colinmarc/hdfs v1.1.3
 	github.com/couchbase/gocb/v2 v2.9.2
 	github.com/denisenkom/go-mssqldb v0.12.3
-	github.com/dgraph-io/ristretto v0.1.1
+	github.com/dgraph-io/ristretto/v2 v2.3.0
 	github.com/dop251/goja v0.0.0-20241024094426-79f3a7efcdbd
 	github.com/dop251/goja_nodejs v0.0.0-20240728170619-29b559befffc
 	github.com/dustin/go-humanize v1.0.1
@@ -73,7 +74,7 @@ require (
 	github.com/go-zeromq/zmq4 v0.17.0
 	github.com/gocql/gocql v1.6.0
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/go-cmp v0.7.0
 	github.com/googleapis/go-sql-spanner v1.7.4
 	github.com/gorilla/handlers v1.5.2
@@ -90,7 +91,7 @@ require (
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/jhump/protoreflect v1.15.6
 	github.com/jmespath/go-jmespath v0.4.0
-	github.com/klauspost/compress v1.18.0
+	github.com/klauspost/compress v1.18.1
 	github.com/klauspost/pgzip v1.2.6
 	github.com/knights-analytics/hugot v0.4.3
 	github.com/lib/pq v1.10.9
@@ -104,7 +105,7 @@ require (
 	github.com/nats-io/stan.go v0.10.4
 	github.com/nsf/jsondiff v0.0.0-20230430225905-43f6cf3098c1
 	github.com/nsqio/go-nsq v1.1.0
-	github.com/oklog/ulid v1.3.1
+	github.com/oklog/ulid/v2 v2.1.1
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/opensearch-project/opensearch-go/v4 v4.5.0
 	github.com/ory/dockertest/v3 v3.10.0
@@ -120,7 +121,7 @@ require (
 	github.com/quipo/dependencysolver v0.0.0-20170801134659-2b009cb4ddcc
 	github.com/r3labs/diff/v3 v3.0.1
 	github.com/rabbitmq/amqp091-go v1.9.0
-	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
+	github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9
 	github.com/redis/go-redis/v9 v9.4.0
 	github.com/rickb777/period v1.0.7
 	github.com/robfig/cron/v3 v3.0.1
@@ -154,11 +155,11 @@ require (
 	go.opentelemetry.io/otel/sdk v1.34.0
 	go.opentelemetry.io/otel/trace v1.35.0
 	go.uber.org/multierr v1.11.0
-	golang.org/x/crypto v0.40.0
-	golang.org/x/net v0.42.0
+	golang.org/x/crypto v0.43.0
+	golang.org/x/net v0.46.0
 	golang.org/x/oauth2 v0.27.0
-	golang.org/x/sync v0.16.0
-	golang.org/x/text v0.27.0
+	golang.org/x/sync v0.17.0
+	golang.org/x/text v0.30.0
 	google.golang.org/api v0.203.0
 	google.golang.org/grpc v1.71.1
 	google.golang.org/protobuf v1.36.6
@@ -193,6 +194,7 @@ require (
 	github.com/yalue/onnxruntime_go v1.21.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	golang.org/x/exp v0.0.0-20250717185816-542afb5b7346 // indirect
+	golang.org/x/telemetry v0.0.0-20250908211612-aef8a434d053 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	modernc.org/gc/v3 v3.0.0-20240107210532-573471604cb6 // indirect
 )
@@ -220,9 +222,9 @@ require (
 	github.com/99designs/keyring v1.2.2 // indirect
 	github.com/AthenZ/athenz v1.10.62 // indirect
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible // indirect
-	github.com/Azure/azure-sdk-for-go/sdk/internal v1.8.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/internal v1.11.2 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
-	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.3 // indirect
+	github.com/AzureAD/microsoft-authentication-library-for-go v1.4.2 // indirect
 	github.com/ClickHouse/ch-go v0.61.5 // indirect
 	github.com/DataDog/zstd v1.5.6 // indirect
 	github.com/GoogleCloudPlatform/grpc-gcp-go/grpcgcp v1.5.2 // indirect
@@ -299,7 +301,6 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
-	github.com/golang/glog v1.2.4 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
@@ -316,9 +317,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
-	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.0 // indirect
-	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
@@ -396,11 +395,11 @@ require (
 	go.opentelemetry.io/proto/otlp v1.1.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/mod v0.26.0 // indirect
-	golang.org/x/sys v0.34.0 // indirect
-	golang.org/x/term v0.33.0 // indirect
+	golang.org/x/mod v0.28.0 // indirect
+	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/term v0.36.0 // indirect
 	golang.org/x/time v0.9.0 // indirect
-	golang.org/x/tools v0.35.0 // indirect
+	golang.org/x/tools v0.37.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	google.golang.org/genproto v0.0.0-20241104194629-dd2ea8efbc28 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250303144028-a0af3efb3deb // indirect
